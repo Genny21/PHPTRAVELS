@@ -1,0 +1,87 @@
+plugins {
+    id 'java'
+    id("net.serenity-bdd.serenity-gradle-plugin") version "${serenityGradlePluginVersion}"
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+
+group 'com.prac.phptravels'
+version '1.0'
+defaultTasks 'clean', 'test', 'aggregate'
+
+
+sourceCompatibility = "${javaVersion}"
+compileJava { options.encoding = "UTF-8" }
+compileTestJava { options.encoding = "UTF-8" }
+gradle.startParameter.continueOnFailure = true
+
+ext {
+    libs = [
+
+            slf4jApi: "org.slf4j:slf4j-api:${slf4jVersion}",
+            logback : "ch.qos.logback:logback-classic:${logbackVersion}",
+            lombok  : "org.projectlombok:lombok:${lombok}",
+            owner   : "org.aeonbits.owner:owner:${ownerVersion}",
+            faker: "com.github.javafaker:javafaker:${fakerVersion}",
+            json:"org.json:json:${jsonVersion}",
+            guava:"com.google.guava:guava:${guavaVersion}",
+            test    : [
+                    serenity     : [
+                            core               : "net.serenity-bdd:serenity-core:${serenityCoreVersion}",
+                            junit              : "net.serenity-bdd:serenity-junit:${serenityCoreVersion}",
+                            screenplay         : "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}",
+                            screenplayWebdriver: "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}",
+                            screenplayEnsure   : "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}",
+                            cucumber           : "net.serenity-bdd:serenity-cucumber:${serenityCucumberVersion}"
+                    ],
+                    junit        : "junit:junit:${junitVersion}",
+                    assertj      : "org.assertj:assertj-core:${assertJVersion}",
+                    hamcrest     : "org.hamcrest:hamcrest-all:${hamcrestVersion}",
+                    cucumberjava : "io.cucumber:cucumber-java:${cucumberJunit}",
+                    cucumberjunit: "io.cucumber:cucumber-junit:${cucumberJava}"
+            ]
+    ]
+}
+
+dependencies {
+    implementation libs.logback,
+            libs.lombok,
+            libs.owner,
+            libs.faker,
+            libs.json,
+            libs.guava,
+            libs.test.serenity.screenplayWebdriver,
+            libs.test.cucumberjava,
+            libs.test.serenity.screenplayEnsure,
+            libs.test.cucumberjunit
+
+    // https://mvnrepository.com/artifact/net.serenity-bdd/serenity-ensure
+    testImplementation group: 'net.serenity-bdd', name: 'serenity-ensure', version: '3.2.4'
+
+
+    testImplementation libs.test.serenity.core,
+            libs.test.serenity.screenplay,
+            libs.test.serenity.screenplayEnsure,
+            libs.test.serenity.junit,
+            libs.test.serenity.cucumber,
+            libs.test.junit,
+            libs.test.assertj,
+            libs.test.hamcrest
+
+    /* Lombok */
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+}
+test {
+    systemProperty "cucumber.options", System.getProperty("cucumber.options")
+    systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags")
+}
+
+tasks.withType(Test) {
+    systemProperties System.getProperties()
+    include '**/InicioRunner**.class', '**/VueloRunner**.class','**/AeropuertoRunner**.class', '**/AerolineaRunner**.class', '**/Runner**.class'
+}
